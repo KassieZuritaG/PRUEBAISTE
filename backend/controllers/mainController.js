@@ -57,22 +57,19 @@ const mainController = {
 
 const createProduct = async (req, res) => {
   try {
-    return res.status(200).json({"resp": req.body});
-    // const {nombre, descripcion, precio, cantidad_en_stock} = req.body;
+    const {nombre, descripcion, precio, cantidad_en_stock} = req.body;
   
-    const response = await connection.query('INSERT INTO productos (nombre, descripcion, precio, cantidad_en_stock) values (?, ?, ?, ?)', ["Test", "Descr", 12, 100]);
+    connection.query('INSERT INTO productos (nombre, descripcion, precio, cantidad_en_stock) values (?, ?, ?, ?)', [nombre, descripcion, precio, cantidad_en_stock], (error, result) => {
+      if (error) {
+        console.error('Error al crear producto:', error);
+        return res.status(500).json({ message: 'Error del servidor' });
+      }
+      return res.status(201).json({ message: 'Producto creado exitosamente', insertId: result.insertId });
+    });
     
-    console.log(response);
-    return res.status(201).json({ message: response });
-    // if (error) {
-    //   console.error('Error al crear producto:', error);
-    //   return res.status(500).json({ message: 'Error del servidor', error });
-    // }
-    // return res.status(201).json({ message: 'Producto creado exitosamente', insertId: result.insertId });
   } catch (error) {
       return res.status(500).json({ "Error": error });
   }
-  // console.log(req.body)
 };
 
 module.exports = {

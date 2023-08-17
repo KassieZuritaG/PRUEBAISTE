@@ -5,11 +5,12 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
 import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
 import { TextField, Modal} from '@mui/material';
-import { createProduct } from '../services/api';
+import { createProduct, updateProduct, deleteProduct } from '../services/api';
 
 function ProductList() {
     const [productos, setProducts] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [productId, setProductId] = useState(0);
 
     const [isAddingProduct, setIsAddingProduct] = useState(false); // Estado para controlar la ventana flotante
     const [newProduct, setNewProduct] = useState({
@@ -37,7 +38,7 @@ function ProductList() {
         getProducts()
         .then(response => setProducts(response.data))
         .catch(error => console.error(error));
-    }, []);
+    }, [productId]);
 
     // Función para manejar los cambios en el término de búsqueda
     const handleSearchTermChange = (event) => {
@@ -45,6 +46,9 @@ function ProductList() {
     };
 
     const filteredProducts = productos.filter(product => {
+        if (!product.nombre) {
+            return;
+        }
         return product.nombre.toLowerCase().includes(searchTerm.toLowerCase());
     });
 
@@ -69,6 +73,46 @@ function ProductList() {
                 console.error(error);
             });
     };
+
+    const handleSaveUpdate = () => {
+        updateProduct(newProduct, productId)
+            .then(response => {
+                setProducts([...productos, response.data]);
+                closeAddProductModal();
+                setNewProduct({
+                    nombre: '',
+                    descripcion: '',
+                    precio: 0,
+                    cantidad_en_stock: 0
+                });
+                setProductId(0);
+                console.log(setProducts);
+            })
+            .catch(error => {
+                console.error(error);
+            });
+    }
+
+    const handleUpdate = ({id, nombre, descripcion, precio, cantidad_en_stock}) => {
+        setProductId(id);
+        setNewProduct({
+            nombre,
+            descripcion,
+            precio,
+            cantidad_en_stock
+        });
+        setIsAddingProduct(true);
+    }
+
+    const handleDelete = ({productId}) => {
+        deleteProduct(productId)
+            .then(response => {
+                console.log(response);
+            })
+            .catch(error => {
+                console.error(error);
+            });
+    }
 
     return (
         <Container maxWidth="md">
@@ -116,12 +160,16 @@ function ProductList() {
                         <TableCell>{product.precio}</TableCell>
                         <TableCell>{product.cantidad_en_stock}</TableCell>
                         <TableCell>
-                        <Button variant="contained" color="primary" href="#contained-buttons">
+                        <Button variant="contained" color="primary" href="#contained-buttons"
+                            onClick={() => handleUpdate({...product})}
+                        >
                             Editar
                             </Button>
                         </TableCell>
                         <TableCell>
-                        <Button variant="contained" color="primary" href="#contained-buttons">
+                        <Button variant="contained" color="primary" href="#contained-buttons"
+                            onClick={() => handleDelete({productId: product.id})}
+                        >
                             Eliminar 
                             </Button>
                         </TableCell>
@@ -175,9 +223,18 @@ function ProductList() {
                         style={{ marginBottom: '10px' }}
                     />
                     {/* Resto de los campos de entrada para otros detalles del producto */}
-                    <Button variant="contained" color="primary" onClick={addProduct}>
-                        Agregar Producto
-                    </Button>
+
+                    
+                    { productId == 0 ?
+                        <Button variant="contained" color="primary" onClick={addProduct}>
+                            Agregar Producto
+                        </Button>
+                    :
+                        <Button variant="contained" color="primary" onClick={handleSaveUpdate}>
+                            Guardar Producto
+                        </Button>
+                     }
+
                 </Container>
             </Modal>
         </Container>

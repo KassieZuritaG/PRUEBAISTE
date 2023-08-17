@@ -1,0 +1,25 @@
+version: '3.8'
+services:  
+  db-iste:
+    image: mysql:8.0.32
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: dbiste
+      MYSQL_USER: dbisteuser
+      MYSQL_PASSWORD: secret
+    ports:
+      - '3306:3306'
+    volumes:
+      - iste-db:/var/lib/mysql
+    networks:
+      - iste-net
+    cap_add:
+      - SYS_NICE
+
+volumes:
+  iste-db:
+    name: iste-db
+networks:
+  iste-net:
+    name: iste-net
