@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  iste-app:
+    working_dir: /app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+    ports:
+     - '3000:3000'
+    networks:
+     - iste-net
+    volumes:
+     - ./:/app
+networks:
+  iste-net:
+    external: true
